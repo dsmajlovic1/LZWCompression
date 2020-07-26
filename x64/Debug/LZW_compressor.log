@@ -1,0 +1,4 @@
+﻿  LZWcompressor.cpp
+C:\Users\Delila\source\repos\LZW_compressor\LZW_algorithm.h(13,82): warning C4302: '<function-style-cast>': truncation from 'unsigned short (__cdecl *)(void) noexcept' to 'uint16_t'
+  AssemblyInfo.obj : MSIL module encountered; incremental linking is disabled for MSIL; performing full link
+  LZW_compressor.vcxproj -> C:\Users\Delila\source\repos\LZW_compressor\x64\Debug\LZW_compressor.exe
