@@ -154,6 +154,7 @@ namespace lzw_compression
 
 	bool Dictionary::addChild(uint16_t index, char value)
 	{
+		if (this->entriesNumber >= MAX_ENTRY_NUMBER) return false;
 		if (index >= this->entriesNumber) return false;
 		if (index < MAX_CHILDREN_NUMBER) return this->addChild(initialEntries[index], value);
 
@@ -196,6 +197,8 @@ namespace lzw_compression
 	bool Dictionary::containsString(char* string, uint16_t length)
 	{
 		if (length == 0) return false;
+		if (length == 1 && string[0] >= 0 && string[0] < 256) return true;
+
 		bool contains = false;
 		for (uint16_t i = 0; i < MAX_CHILDREN_NUMBER; i++)
 		{
@@ -228,6 +231,7 @@ namespace lzw_compression
 	{
 		//throw exception, define exception
 		if (length == 0) return 0;
+		if (string[0] > 256 || string[0] < 0) return 0;
 		bool continueLoop = true;
 		int stringValue = (uint16_t)string[0];
 		Entry* node = this->initialEntries[string[0]];
@@ -254,25 +258,26 @@ namespace lzw_compression
 
 #pragma region LZW_implementation
 
-	uint16_t* encodeLZW(char* originalData)
+	uint32_t encodeLZW(char* originalData, uint32_t size, uint16_t* &encodedContainer)
 	{
 		try
 		{
 			Dictionary* encodingDictionary = new Dictionary();
 
-			uint16_t* encodedStream = new uint16_t[4096];
-			uint16_t streamMax = 4096;
-			encodedStream[0] = 0;
-			uint16_t streamLength = 0;
+			uint16_t* encodedStream = new uint16_t[size];
+			uint32_t streamMax = size;
+			//encodedStream[0] = 0;
+			uint32_t streamLength = 0;
+			uint32_t current = 0;
 
 			char* dataStream = originalData;
-			char* currentCharacter = dataStream;
-			uint16_t substringLength = 0;
+			//char* currentCharacter = dataStream;
+			uint16_t substringLength = 1;
 
-			while (*dataStream >= 0)
+			while (current < size)
 			{
 				//if string is in the dictionary, continue search with longer string
-				if (encodingDictionary->containsString(dataStream, substringLength + 1))
+				if (encodingDictionary->containsString(dataStream, substringLength) && (dataStream + substringLength < originalData + size))
 				{
 					/*
 					for (int i = 0; i < substringLength + 1; i++)
@@ -281,19 +286,11 @@ namespace lzw_compression
 					}
 					std::cout << std::endl; */
 					substringLength++;
+					current++;
 				}
-				//if the string is not in the dictionary, encoded the last entry in dictionary, add new entry to the dictionary
-				else
+				else if (encodingDictionary->containsString(dataStream, substringLength) && (dataStream + substringLength == originalData + size))
 				{
-					encodedStream[streamLength + 1] = encodingDictionary->findIndex(dataStream, substringLength);
-					encodedStream[0] = streamLength;
-					streamLength++;
-
-					encodingDictionary->addChild(encodedStream[streamLength], dataStream[substringLength]);
-
-					dataStream = dataStream + substringLength;
-					substringLength = 0;
-
+					current++;
 					//if all alocated memory is used, allocate more memory
 					if (streamLength >= streamMax) {
 						streamMax = (streamMax << 1);
@@ -303,38 +300,69 @@ namespace lzw_compression
 						delete[] encodedStream;
 						encodedStream = newStream;
 					}
+
+					encodedStream[streamLength] = encodingDictionary->findIndex(dataStream, substringLength);
+					streamLength++;
+				}
+				//if the string is not in the dictionary, encoded the last entry in dictionary, add new entry to the dictionary
+				else
+				{
+					//if all alocated memory is used, allocate more memory
+					if (streamLength >= streamMax) {
+						streamMax = (streamMax << 1);
+						uint16_t* newStream = new uint16_t[streamMax];
+						for (uint16_t i = 0; i < streamLength; i++) newStream[i] = encodedStream[i];
+
+						delete[] encodedStream;
+						encodedStream = newStream;
+					}
+
+					encodedStream[streamLength] = encodingDictionary->findIndex(dataStream, substringLength - 1);
+					encodingDictionary->addChild(encodedStream[streamLength], dataStream[substringLength - 1]);
+					
+					
+					//encodedStream[0] = streamLength;
+
+					//if(streamLength + substringLength - 1 < size)
+					
+					streamLength++;
+
+					dataStream = dataStream + substringLength -1;
+					substringLength = 1;
 				}
 			}
 
-			encodedStream[streamLength + 1] = static_cast<char>EOF;
-			streamLength++;
-			encodedStream[0] = streamLength;
+			//encodedStream[streamLength + 1] = static_cast<char>EOF;
+			//streamLength++;
+			//encodedStream[0] = streamLength;
 
-			return encodedStream;
+			encodedContainer = encodedStream;
+
+			return streamLength;
 		}
 		catch (...)
 		{
 			//throw custom exception
 			//std::cout << "encodeLZw exception" << std::endl;
-			return nullptr;
+			return NULL;
 		}
 	}
 
-	char* decodeLZW(uint16_t* encodedData)
+	uint32_t decodeLZW(uint16_t* encodedData, uint32_t size, char* &decodedContainer)
 	{
 		Dictionary* decodingDictionary = new Dictionary();
 
-		uint16_t streamLength = encodedData[0];
-		uint16_t decodedLength = 0;
-		encodedData = encodedData + 1;
+		//uint16_t streamLength = encodedData[0];
+		uint32_t streamLength = size;
+		uint32_t decodedLength = 0;
+		//encodedData = encodedData + 1;
 		char* decodedStream = new char[streamLength+1];
-		uint16_t streamMax = streamLength;
+		uint32_t streamMax = streamLength;
 
 		//decodedStream[0] = 0;
 
-		for (uint16_t i = 0; i < streamLength-1; i++)
+		for (uint32_t i = 0; i < streamLength; i++)
 		{
-			if (encodedData[i] == static_cast<uint8_t>(EOF)) break;
 			Entry* entry = decodingDictionary->findEntry(encodedData[i]);
 			std::stack<char> string;
 
@@ -344,7 +372,7 @@ namespace lzw_compression
 				entry = entry->parent;
 			}
 
-			if (decodedLength + string.size() + 1 >= streamMax)
+			if (decodedLength + string.size() >= streamMax)
 			{
 				streamMax = (streamMax << 1);
 				char* newArray = new char[streamMax];
@@ -368,8 +396,9 @@ namespace lzw_compression
 			}
 		}
 		//decodedStream[0] = decodedLength;
-		decodedStream[decodedLength + 1] = static_cast<uint8_t>(-1);
-		return decodedStream;
+		//decodedStream[decodedLength + 1] = static_cast<uint8_t>(-1);
+		decodedContainer = decodedStream;
+		return decodedLength;
 	}
 
 #pragma endregion LZW_implementation

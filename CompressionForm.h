@@ -80,7 +80,7 @@ namespace LZW_interface
 	private: System::Windows::Forms::ToolStripMenuItem^ aboutTheProjectToolStripMenuItem;
 
 	private: Stream^ inStream;
-	private: FileStream^ outStream;
+	private: Stream^ outStream;
 
 	private: String^ inputOriginalText;
 	private: array<uint16_t>^ encoded;
@@ -112,6 +112,7 @@ namespace LZW_interface
 			this->aboutTheProjectToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->compressGroupBox = (gcnew System::Windows::Forms::GroupBox());
 			this->compressOptionsGroupBox = (gcnew System::Windows::Forms::GroupBox());
+			this->label5 = (gcnew System::Windows::Forms::Label());
 			this->label4 = (gcnew System::Windows::Forms::Label());
 			this->compressionSizeTextBox = (gcnew System::Windows::Forms::TextBox());
 			this->saveCompressionButton = (gcnew System::Windows::Forms::Button());
@@ -123,6 +124,8 @@ namespace LZW_interface
 			this->compressInputTextBox = (gcnew System::Windows::Forms::TextBox());
 			this->decompressGroupBox = (gcnew System::Windows::Forms::GroupBox());
 			this->groupBox1 = (gcnew System::Windows::Forms::GroupBox());
+			this->label7 = (gcnew System::Windows::Forms::Label());
+			this->label6 = (gcnew System::Windows::Forms::Label());
 			this->decompressedSizeTextBox = (gcnew System::Windows::Forms::TextBox());
 			this->saveDecompressedButton = (gcnew System::Windows::Forms::Button());
 			this->label2 = (gcnew System::Windows::Forms::Label());
@@ -135,9 +138,6 @@ namespace LZW_interface
 			this->toolStripStatusLabel = (gcnew System::Windows::Forms::ToolStripStatusLabel());
 			this->openCompressionFileDialog = (gcnew System::Windows::Forms::OpenFileDialog());
 			this->openDecompressionFileDialog = (gcnew System::Windows::Forms::OpenFileDialog());
-			this->label5 = (gcnew System::Windows::Forms::Label());
-			this->label6 = (gcnew System::Windows::Forms::Label());
-			this->label7 = (gcnew System::Windows::Forms::Label());
 			this->menuStrip->SuspendLayout();
 			this->compressGroupBox->SuspendLayout();
 			this->compressOptionsGroupBox->SuspendLayout();
@@ -232,6 +232,15 @@ namespace LZW_interface
 			this->compressOptionsGroupBox->TabIndex = 2;
 			this->compressOptionsGroupBox->TabStop = false;
 			// 
+			// label5
+			// 
+			this->label5->AutoSize = true;
+			this->label5->Location = System::Drawing::Point(339, 68);
+			this->label5->Name = L"label5";
+			this->label5->Size = System::Drawing::Size(42, 17);
+			this->label5->TabIndex = 7;
+			this->label5->Text = L"bytes";
+			// 
 			// label4
 			// 
 			this->label4->AutoSize = true;
@@ -243,6 +252,7 @@ namespace LZW_interface
 			// 
 			// compressionSizeTextBox
 			// 
+			this->compressionSizeTextBox->Enabled = false;
 			this->compressionSizeTextBox->Location = System::Drawing::Point(153, 65);
 			this->compressionSizeTextBox->Name = L"compressionSizeTextBox";
 			this->compressionSizeTextBox->Size = System::Drawing::Size(180, 22);
@@ -270,6 +280,7 @@ namespace LZW_interface
 			// 
 			// originalSizeTextBox
 			// 
+			this->originalSizeTextBox->Enabled = false;
 			this->originalSizeTextBox->Location = System::Drawing::Point(153, 15);
 			this->originalSizeTextBox->Name = L"originalSizeTextBox";
 			this->originalSizeTextBox->Size = System::Drawing::Size(180, 22);
@@ -340,8 +351,27 @@ namespace LZW_interface
 			this->groupBox1->TabIndex = 6;
 			this->groupBox1->TabStop = false;
 			// 
+			// label7
+			// 
+			this->label7->AutoSize = true;
+			this->label7->Location = System::Drawing::Point(339, 70);
+			this->label7->Name = L"label7";
+			this->label7->Size = System::Drawing::Size(42, 17);
+			this->label7->TabIndex = 9;
+			this->label7->Text = L"bytes";
+			// 
+			// label6
+			// 
+			this->label6->AutoSize = true;
+			this->label6->Location = System::Drawing::Point(339, 20);
+			this->label6->Name = L"label6";
+			this->label6->Size = System::Drawing::Size(42, 17);
+			this->label6->TabIndex = 8;
+			this->label6->Text = L"bytes";
+			// 
 			// decompressedSizeTextBox
 			// 
+			this->decompressedSizeTextBox->Enabled = false;
 			this->decompressedSizeTextBox->Location = System::Drawing::Point(153, 67);
 			this->decompressedSizeTextBox->Name = L"decompressedSizeTextBox";
 			this->decompressedSizeTextBox->Size = System::Drawing::Size(180, 22);
@@ -369,6 +399,7 @@ namespace LZW_interface
 			// 
 			// compressedSizeTextBox
 			// 
+			this->compressedSizeTextBox->Enabled = false;
 			this->compressedSizeTextBox->Location = System::Drawing::Point(153, 17);
 			this->compressedSizeTextBox->Name = L"compressedSizeTextBox";
 			this->compressedSizeTextBox->Size = System::Drawing::Size(180, 22);
@@ -437,33 +468,6 @@ namespace LZW_interface
 			this->openDecompressionFileDialog->FileName = L"Select file...";
 			this->openDecompressionFileDialog->FileOk += gcnew System::ComponentModel::CancelEventHandler(this, &CompressionForm::openDecompressionFileDialog_FileOk);
 			// 
-			// label5
-			// 
-			this->label5->AutoSize = true;
-			this->label5->Location = System::Drawing::Point(339, 68);
-			this->label5->Name = L"label5";
-			this->label5->Size = System::Drawing::Size(42, 17);
-			this->label5->TabIndex = 7;
-			this->label5->Text = L"bytes";
-			// 
-			// label6
-			// 
-			this->label6->AutoSize = true;
-			this->label6->Location = System::Drawing::Point(339, 20);
-			this->label6->Name = L"label6";
-			this->label6->Size = System::Drawing::Size(42, 17);
-			this->label6->TabIndex = 8;
-			this->label6->Text = L"bytes";
-			// 
-			// label7
-			// 
-			this->label7->AutoSize = true;
-			this->label7->Location = System::Drawing::Point(339, 70);
-			this->label7->Name = L"label7";
-			this->label7->Size = System::Drawing::Size(42, 17);
-			this->label7->TabIndex = 9;
-			this->label7->Text = L"bytes";
-			// 
 			// CompressionForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
@@ -493,45 +497,56 @@ namespace LZW_interface
 
 		}
 #pragma endregion
-	private: array<uint16_t>^ convertPrimitiveUint16ToSystemArray(uint16_t* primitiveList) {
+	private: array<uint16_t>^ convertPrimitiveUint16ToSystemArray(uint16_t* primitiveList, uint32_t size) {
 		uint16_t* list = primitiveList;
-		int i = 0;
-		int size = *list;
-		list += 1;
+		//int i = 0;
+		///int size = *list;
+		//list += 1;
 		array<uint16_t>^ arrayList = gcnew array<uint16_t>(size);
 
-		while (*list != EOF && i < size)
+		/*while (*list != EOF && i < size)
 		{
 			arrayList[i] = *list;
 			list++;
 			i++;
+		}*/
+		for (uint32_t i = 0; i < size; i++)
+		{
+			arrayList[i] = *list;
+			list++;
 		}
-		delete[] primitiveList;
+		//delete[] primitiveList;
 		return arrayList;
 	}
-	private: array<char>^ convertPrimitiveCharToSystemArray(char* primitiveList) {
+	private: array<char>^ convertPrimitiveCharToSystemArray(char* primitiveList, uint32_t size) {
 		char* list = primitiveList;
-		int i = 0;
+		//int i = 0;
 		//int size = *list;
 		//list += 1;
-		while (*list != static_cast<uint8_t>(-1))
+		/*while (*list != static_cast<uint8_t>(-1))
 		{
 			i++;
 			list++;
-		}
+		}*/
 		//int size = (inputCompressedText->Length - 2); 
-		int size = i;
-		i = 0;
-		list = primitiveList;
+		//int size = i;
+		//i = 0;
+		//list = primitiveList;
 		array<char>^ arrayList = gcnew array<char>(size);
 
-		while (i < size)
+		/*while (i < size)
 		{
 			arrayList[i] = *list;
 			list++;
 			i++;
+		}*/
+
+		for (uint32_t i = 0; i < size; i++)
+		{
+			arrayList[i] = *list;
+			list++;
 		}
-		delete[] primitiveList;
+		//delete[] primitiveList;
 		return arrayList;
 	}
 	private: array<uint8_t>^ convertUint16toUint8(array<uint16_t>^ array16)
@@ -546,6 +561,17 @@ namespace LZW_interface
 		return array8;
 	}
 
+	private: array<uint8_t>^ convertChartoUint8(array<char>^ arrayChar)
+	{
+		array<uint8_t>^ array8 = gcnew array<uint8_t>(arrayChar->Length);
+
+		for (int i = 0; i < arrayChar->Length; i++)
+		{
+			array8[i] = static_cast<uint8_t>(arrayChar[i]);
+		}
+		return array8;
+	}
+
 	private: char* convertStringToPrimitiveArray(String^ string) {
 		char* charArray = new char[string->Length+1];
 		for (int i = 0; i < string->Length; i++) 
@@ -556,9 +582,9 @@ namespace LZW_interface
 		return charArray;
 	}
 	private: uint16_t* convertByteArrayToPrimitiveUint16Array(array<Byte>^ arrayList) {
-		uint16_t* byteArray = new uint16_t[arrayList->Length + 1];
-		int size = (arrayList->Length - 2)/2;
-		byteArray[0] = static_cast<uint16_t>(size);
+		uint16_t* byteArray = new uint16_t[arrayList->Length/2];
+		//int size = (arrayList->Length - 2)/2;
+		//byteArray[0] = static_cast<uint16_t>(size);
 		for (int i = 0; i < arrayList->Length-1; i++)
 		{
 			uint16_t twoBytes;
@@ -568,7 +594,7 @@ namespace LZW_interface
 			i++;
 			byteArray[(i+1)/2] = twoBytes;
 		}
-		byteArray[arrayList->Length] = EOF;
+		//byteArray[arrayList->Length] = EOF;
 		return byteArray;
 	}
 
@@ -590,28 +616,48 @@ namespace LZW_interface
 		originalSizeTextBox->Text = size.ToString();
 	}
 	private: System::Void compressButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		if (inputOriginalText == nullptr)
+		{
+			toolStripStatusLabel->Text = "Status: File for compression not selected";
+			return;
+		}
+		toolStripStatusLabel->Text = "Status: Compressing...";
+
 		//Compress opened file
 		char* primitive = convertStringToPrimitiveArray(inputOriginalText);
-		encoded = convertPrimitiveUint16ToSystemArray(lzw_compression::encodeLZW(primitive));
+		uint16_t* encodedArray;
+		uint32_t encodedSize;
+		encodedSize = lzw_compression::encodeLZW(primitive, inputOriginalText->Length, encodedArray);
+		encoded = convertPrimitiveUint16ToSystemArray(encodedArray, encodedSize);
 
 		int size = encoded->Length*sizeof(encoded[0]); //16-bit integers
 		//int size = sizeof(encoded);
 
 		compressionSizeTextBox->Text = size.ToString();
-		delete[] primitive;
+		toolStripStatusLabel->Text = "Status: Compressed";
+		//delete[] primitive;
+		delete[] inputOriginalText;
+		delete[] encodedArray;
 	}
 	private: System::Void saveCompressionButton_Click(System::Object^ sender, System::EventArgs^ e) {
 		String^ path = compressInputTextBox->Text;
 		//Save compressed file as new file
-		outStream = File::OpenWrite(path->Substring(0, path->Length-4)+".lzw");
+		path = path->Substring(0, path->Length - 4) + ".etf";
+		if (File::Exists(path))
+		{
+			File::Delete(path);
+		}
+		outStream = File::OpenWrite(path);
 
 		//outStream->Write(convertArrayListToByteArray(encoded), 0, encoded->Length);
 
 		//array<uint8_t>^ data = reinterpret_cast<array<uint8_t>^>(encoded);
 		array<uint8_t>^ data = convertUint16toUint8(encoded);
 		int size = encoded->Length*2;
-		outStream->Write(data, 0, size); //encoded is uint16_t, data is twice as long
+		outStream->Write(data, 0, data->Length); //encoded is uint16_t, data is twice as long
 		outStream->Close();
+		delete[] encoded;
+		toolStripStatusLabel->Text = "Status: Saved";
 	}
 	private: System::Void decompressInputButton_Click(System::Object^ sender, System::EventArgs^ e) {
 		openCompressionFileDialog->FileName = "Select file...";
@@ -630,26 +676,46 @@ namespace LZW_interface
 		compressedSizeTextBox->Text = size.ToString();
 	}
 	private: System::Void decompressButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		if (inputCompressedText == nullptr)
+		{
+			toolStripStatusLabel->Text = "Status: File for decompression not selected";
+			return;
+		}
+		toolStripStatusLabel->Text = "Status: Decompressing...";
+
 		//Decompress opened file
 		uint16_t* primitive = convertByteArrayToPrimitiveUint16Array(inputCompressedText);
-		decoded = convertPrimitiveCharToSystemArray(lzw_compression::decodeLZW(primitive));
+		char* decodedArray;
+		uint32_t decodedSize;
+		decodedSize = lzw_compression::decodeLZW(primitive, inputCompressedText->Length/2, decodedArray);
+		decoded = convertPrimitiveCharToSystemArray(decodedArray, decodedSize);
 
 		int size = decoded->Length * sizeof(decoded[0]); //8-bit char
 		//int size = sizeof(decoded);
 
 		decompressedSizeTextBox->Text = size.ToString();
-		delete[] primitive;
+		toolStripStatusLabel->Text = "Status: Decompressed";
+		delete[] inputCompressedText;
+		//delete[] primitive;
+		delete[] decodedArray;
 	}
 	private: System::Void saveDecompressedButton_Click(System::Object^ sender, System::EventArgs^ e) {
 		//Save decompressed file
 		String^ path = decompressInputTextBox->Text;
-		outStream = File::OpenWrite(path->Substring(0, path->Length - 4) + "-Decompressed.txt");
+		path = path->Substring(0, path->Length - 4) + "-Decompressed.txt";
+		if (File::Exists(path))
+		{
+			File::Delete(path);
+		}
+		outStream = File::OpenWrite(path);
 
 		//outStream->Write(convertArrayListToByteArray(decoded), 0, decoded->Length);
 
-		array<uint8_t>^ data = reinterpret_cast<array<uint8_t>^>(decoded);
-		outStream->Write(data, 0, decoded->Length);
+		array<uint8_t>^ data = convertChartoUint8(decoded);
+		outStream->Write(data, 0, data->Length);
 		outStream->Close();
+		delete[] decoded;
+		toolStripStatusLabel->Text = "Status: Saved";
 	}
 	private: System::Void exitToolStripMenuItem_Click(System::Object^ sender, System::EventArgs^ e) {
 		this->Close();
