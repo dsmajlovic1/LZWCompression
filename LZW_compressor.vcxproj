@@ -140,18 +140,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ResourceCompile Include="app.rc" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="CompressionForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="CompressionViewForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="ConvertCollections.h" />
     <ClInclude Include="LZW_algorithm.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="CompressionViewForm.cpp" />
     <ClCompile Include="LZWcompressor.cpp" />
     <ClCompile Include="CompressionForm.cpp" />
     <ClCompile Include="pch.cpp">
@@ -163,6 +165,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="app.ico" />
+    <Image Include="logoEtf.ico" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -175,6 +178,12 @@
     <EmbeddedResource Include="CompressionForm.resx">
       <DependentUpon>CompressionForm.h</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="CompressionViewForm.resx">
+      <DependentUpon>CompressionViewForm.h</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

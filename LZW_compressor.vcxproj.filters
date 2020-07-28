@@ -15,11 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="app.rc">
-      <Filter>Resource files</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="Resource.h">
       <Filter>Header files</Filter>
     </ClInclude>
@@ -30,6 +25,12 @@
       <Filter>Header files</Filter>
     </ClInclude>
     <ClInclude Include="LZW_algorithm.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="CompressionViewForm.h">
+      <Filter>Header files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConvertCollections.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -46,10 +47,21 @@
     <ClCompile Include="LZWcompressor.cpp">
       <Filter>Source files</Filter>
     </ClCompile>
+    <ClCompile Include="CompressionViewForm.cpp">
+      <Filter>Source files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="logoEtf.ico">
+      <Filter>Resource files</Filter>
+    </Image>
     <Image Include="app.ico">
       <Filter>Resource files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc">
+      <Filter>Resource files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

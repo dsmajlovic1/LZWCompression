@@ -1,4 +1,5 @@
   LZW_compressor.CompressionForm.resources - Embedded, ContainedInManifestFile, 
+  LZW_compressor.CompressionViewForm.resources - Embedded, ContainedInManifestFile, 
 ImageRuntimeVersion: v4.0.30319
 Assembly LZW_compressor, Version=1.0.*, Culture=Invariant Language (Invariant Country): 
 	hash=SHA1, flags=PublicKey
@@ -14,6 +15,17 @@ Assembly System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=
 	hash=None, flags=None
 Assembly System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
 	hash=None, flags=None
+Class LZW_interface.CompressionViewForm: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Methods:
+    convertStringToPrimitiveCharArray(String): PrivateScope, Public, HideBySig
 Class LZW_interface.CompressionForm: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
   :System.Windows.Forms.Form
     Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Methods:
+    convertPrimitiveUint16ToSystemArray(UInt16*, UInt32): PrivateScope, Public, HideBySig
+    convertPrimitiveCharToSystemArray(SByte*, UInt32): PrivateScope, Public, HideBySig
+    convertUint16toUint8(UInt16[]): PrivateScope, Public, HideBySig
+    convertStringToPrimitiveArray(String): PrivateScope, Public, HideBySig
+    convertByteArrayToPrimitiveUint16Array(Byte[]): PrivateScope, Public, HideBySig

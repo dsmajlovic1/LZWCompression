@@ -10,7 +10,7 @@ namespace lzw_compression
 {
 
 	static uint16_t MAX_CHILDREN_NUMBER = 256;
-	static uint16_t MAX_ENTRY_NUMBER = uint16_t( std::numeric_limits<uint16_t>::max );
+	static uint16_t MAX_ENTRY_NUMBER = uint16_t(std::numeric_limits<uint16_t>::max);
 
 	//Dictionary node class
 	class Entry
@@ -39,6 +39,9 @@ namespace lzw_compression
 		Dictionary();
 		~Dictionary();
 
+		uint16_t Length();
+		void logSubentries(Entry* parent, System::String^ indent);
+		void logDictionary();
 		bool substring(Entry* start, char* string, uint16_t length);
 		Entry* findSubentry(Entry* entry, uint16_t index);
 		bool addChild(Entry* parent, char value);
@@ -49,8 +52,9 @@ namespace lzw_compression
 	};
 
 	//LZW implemention
-	uint16_t* encodeLZW(char* originalData);
-	char* decodeLZW(uint16_t* encodedData);
+	uint32_t encodeLZW(char* originalData, uint32_t size, uint16_t*& encodedContainer);
+	uint32_t decodeLZW(uint16_t* encodedData, uint32_t size, char*& decodedContainer);
+
 
 
 	//Methods implementations
@@ -62,7 +66,7 @@ namespace lzw_compression
 		this->code = code;
 		this->value = value;
 		childrenLength = 0;
-		childrenMax = (1 << 6);
+		childrenMax = (1 << 8);
 		children = new Entry * [childrenMax];
 		for (uint16_t i = 0; i < childrenMax; i++) children[i] = nullptr;
 	}
@@ -78,24 +82,27 @@ namespace lzw_compression
 
 	bool Entry::addChild(Entry* newEntry)
 	{
+		if (childrenLength >= MAX_CHILDREN_NUMBER) return false;
 		try
 		{
 			//if all alocated memory is used, allocate more memory
+			Entry** newArray = new Entry * [this->childrenMax];
+			children[childrenLength] = newEntry;
+
 			if (this->childrenLength >= this->childrenMax)
 			{
 				if (childrenMax >= MAX_CHILDREN_NUMBER) return false;
-				childrenMax = (childrenMax << 1);
-				Entry** newArray = new Entry * [childrenMax];
+				if (this->childrenLength * 2 < MAX_CHILDREN_NUMBER) childrenMax = childrenLength * 2;
+				else childrenMax = MAX_CHILDREN_NUMBER;
 
 				for (uint16_t i = 0; i < childrenLength; i++)
 				{
 					newArray[i] = children[i];
 				}
+
 				delete[] children;
 				children = newArray;
 			}
-
-			children[childrenLength] = newEntry;
 			this->childrenLength++;
 			return true;
 		}
@@ -132,10 +139,14 @@ namespace lzw_compression
 		}
 		delete[] initialEntries;
 	}
+	uint16_t Dictionary::Length()
+	{
+		return this->entriesNumber;
+	}
 	bool Dictionary::addChild(Entry* parent, char value)
 	{
 		if (this->entriesNumber >= MAX_ENTRY_NUMBER) return false;
-		//if (parent->childrenLength == parent->childrenMax) return false;
+		if (parent->childrenLength >= MAX_CHILDREN_NUMBER) throw gcnew System::IndexOutOfRangeException;
 
 		//parent->children[parent->childrenLength] = new Entry(parent, parent->childrenLength, value);
 		//parent->childrenLength++;
@@ -150,6 +161,51 @@ namespace lzw_compression
 			//std::cout << "addChild exception" << std::endl;
 			return false;
 		}
+	}
+
+	void Dictionary::logSubentries(Entry* parent, System::String^ indent)
+	{
+		System::IO::StreamWriter^ stream = System::IO::File::AppendText("C:\\Users\\Delila\\Desktop\\logTree.txt");
+		array<char>^ writeArray = gcnew array<char>(6);
+		writeArray[0] = static_cast<char>((parent->code >> 8));
+		writeArray[1] = static_cast<char>(parent->code);
+		writeArray[2] = '-';
+		writeArray[3] = parent->value;
+		writeArray[4] = ':';
+		writeArray[5] = '\n';
+		//char* charOne = new char[1];
+		//charOne[0] = static_cast<char>(writeArray[3]);
+		char charOne = static_cast<char>(writeArray[3]);
+		//if(stream->Length == 0)stream->Write(writeArray, stream->Length, 6);
+		//else stream->Write(writeArray, stream->Length-1, 6);
+		System::String^ string = gcnew System::String(indent + parent->code.ToString() + "-" + gcnew System::String(&charOne)+ " sub "+ parent->childrenLength.ToString()+  ":\n");
+		stream->WriteLine(string);
+		//delete[] charOne;
+
+		stream->Close();
+		for (int i = 0; i < parent->childrenLength; i++)
+		{
+			logSubentries(parent->children[i], indent+"		");
+		}
+			
+
+		
+	}
+
+	void Dictionary::logDictionary()
+	{
+		if (System::IO::File::Exists("C:\\Users\\Delila\\Desktop\\logTree.txt"))
+		{
+			System::IO::File::Delete("C:\\Users\\Delila\\Desktop\\logTree.txt");
+		}
+		System::IO::File::Create("C:\\Users\\Delila\\Desktop\\logTree.txt")->Close();
+		for (int i = 0; i < MAX_CHILDREN_NUMBER; i++)
+		{
+			logSubentries(this->initialEntries[i], "");
+		}
+			
+
+
 	}
 
 	bool Dictionary::addChild(uint16_t index, char value)
@@ -170,16 +226,17 @@ namespace lzw_compression
 
 	Entry* Dictionary::findSubentry(Entry* entry, uint16_t index)
 	{
+		Entry* ptr = nullptr;
 		for (uint16_t i = 0; i < entry->childrenLength; i++)
 		{
 			if (entry->children[i]->code == index) return entry->children[i];
 			else
 			{
-				Entry* ptr = findSubentry(entry->children[i], index);
+				ptr = findSubentry(entry->children[i], index);
 				if (ptr != nullptr) return ptr;
 			}
 		}
-		return nullptr;
+		return ptr;
 	}
 	Entry* Dictionary::findEntry(uint16_t index)
 	{
@@ -210,6 +267,7 @@ namespace lzw_compression
 		return contains;
 	}
 
+	
 
 	bool Dictionary::substring(Entry* start, char* string, uint16_t length)
 	{
@@ -279,12 +337,6 @@ namespace lzw_compression
 				//if string is in the dictionary, continue search with longer string
 				if (encodingDictionary->containsString(dataStream, substringLength) && (dataStream + substringLength < originalData + size))
 				{
-					/*
-					for (int i = 0; i < substringLength + 1; i++)
-					{
-						std::cout << dataStream[i];
-					}
-					std::cout << std::endl; */
 					substringLength++;
 					current++;
 				}
@@ -317,13 +369,12 @@ namespace lzw_compression
 						encodedStream = newStream;
 					}
 
+					if (*dataStream == 'n') {
+						dataStream = dataStream;
+					}
 					encodedStream[streamLength] = encodingDictionary->findIndex(dataStream, substringLength - 1);
 					encodingDictionary->addChild(encodedStream[streamLength], dataStream[substringLength - 1]);
 					
-					
-					//encodedStream[0] = streamLength;
-
-					//if(streamLength + substringLength - 1 < size)
 					
 					streamLength++;
 
@@ -331,10 +382,11 @@ namespace lzw_compression
 					substringLength = 1;
 				}
 			}
+			
 
-			//encodedStream[streamLength + 1] = static_cast<char>EOF;
-			//streamLength++;
-			//encodedStream[0] = streamLength;
+			//encodingDictionary->logDictionary();
+
+			delete encodingDictionary;
 
 			encodedContainer = encodedStream;
 
@@ -352,18 +404,29 @@ namespace lzw_compression
 	{
 		Dictionary* decodingDictionary = new Dictionary();
 
-		//uint16_t streamLength = encodedData[0];
 		uint32_t streamLength = size;
 		uint32_t decodedLength = 0;
-		//encodedData = encodedData + 1;
 		char* decodedStream = new char[streamLength+1];
 		uint32_t streamMax = streamLength;
 
-		//decodedStream[0] = 0;
-
 		for (uint32_t i = 0; i < streamLength; i++)
 		{
-			Entry* entry = decodingDictionary->findEntry(encodedData[i]);
+			if (encodedData[i] == 858)
+			{
+				encodedData[i] = encodedData[i];
+			}
+			if (encodedData[i] == 1106)
+			{
+				encodedData[i] = encodedData[i];
+			}
+			Entry* entry;
+			if (encodedData[i] == decodingDictionary->Length())
+			{
+				entry = decodingDictionary->findEntry(encodedData[i - 1]);
+			}
+			else {
+				entry = decodingDictionary->findEntry(encodedData[i]);
+			}
 			std::stack<char> string;
 
 			while (entry != nullptr)
@@ -385,7 +448,23 @@ namespace lzw_compression
 				decodedStream = newArray;
 			}
 
-			if (i != 0 && !string.empty() ) decodingDictionary->addChild(encodedData[i - 1], string.top());
+			if (i != 0 && !string.empty() && encodedData[i] != decodingDictionary->Length()) decodingDictionary->addChild(encodedData[i - 1], string.top());
+			else if (i != 0 && !string.empty() && encodedData[i] == decodingDictionary->Length())
+			{
+				decodingDictionary->addChild(encodedData[i - 1], string.top());
+
+				entry = decodingDictionary->findEntry(encodedData[i]);
+				while (!string.empty())
+				{
+					string.pop();
+				}
+				while (entry != nullptr)
+				{
+					string.push(entry->value);
+					entry = entry->parent;
+				}
+
+			}
 
 			while (!string.empty())
 			{
@@ -395,9 +474,15 @@ namespace lzw_compression
 				decodedLength++;
 			}
 		}
-		//decodedStream[0] = decodedLength;
-		//decodedStream[decodedLength + 1] = static_cast<uint8_t>(-1);
-		decodedContainer = decodedStream;
+		delete decodingDictionary;
+
+		char* shortenedArray = new char[decodedLength];
+		for (uint32_t i = 0; i < decodedLength; i++)
+			shortenedArray[i] = decodedStream[i];
+
+		delete[] decodedStream;
+
+		decodedContainer = shortenedArray;
 		return decodedLength;
 	}
 
