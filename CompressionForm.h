@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <stdio.h>
+#include "resource.h"
 #include "LZW_algorithm.h"
 #include "CompressionViewForm.h"
 //#include <iostream>
@@ -18,6 +19,7 @@ namespace LZW_interface
 	using namespace System::IO;
 	using namespace System::Threading;
 
+	delegate void MyDelegate(Object^ obj);
 	
 	public ref class CompressionForm : public System::Windows::Forms::Form
 	{
@@ -25,12 +27,10 @@ namespace LZW_interface
 		CompressionForm(void)
 		{
 			InitializeComponent();
+			this->Icon = gcnew System::Drawing::Icon(L"logoEtf.ico");
 		}
 
 	protected:
-		/// <summary>
-		/// Verwendete Ressourcen bereinigen.
-		/// </summary>
 		~CompressionForm()
 		{
 			if (components)
@@ -102,6 +102,7 @@ namespace LZW_interface
 
 		void InitializeComponent(void)
 		{
+			System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(CompressionForm::typeid));
 			this->menuStrip = (gcnew System::Windows::Forms::MenuStrip());
 			this->fileToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->openConverterToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
@@ -171,14 +172,14 @@ namespace LZW_interface
 			// openConverterToolStripMenuItem
 			// 
 			this->openConverterToolStripMenuItem->Name = L"openConverterToolStripMenuItem";
-			this->openConverterToolStripMenuItem->Size = System::Drawing::Size(224, 26);
+			this->openConverterToolStripMenuItem->Size = System::Drawing::Size(194, 26);
 			this->openConverterToolStripMenuItem->Text = L"Open converter";
 			this->openConverterToolStripMenuItem->Click += gcnew System::EventHandler(this, &CompressionForm::openConverterToolStripMenuItem_Click);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this->exitToolStripMenuItem->Name = L"exitToolStripMenuItem";
-			this->exitToolStripMenuItem->Size = System::Drawing::Size(224, 26);
+			this->exitToolStripMenuItem->Size = System::Drawing::Size(194, 26);
 			this->exitToolStripMenuItem->Text = L"Exit";
 			this->exitToolStripMenuItem->Click += gcnew System::EventHandler(this, &CompressionForm::exitToolStripMenuItem_Click);
 			// 
@@ -197,12 +198,14 @@ namespace LZW_interface
 			this->instructionsToolStripMenuItem->Name = L"instructionsToolStripMenuItem";
 			this->instructionsToolStripMenuItem->Size = System::Drawing::Size(209, 26);
 			this->instructionsToolStripMenuItem->Text = L"Instructions";
+			this->instructionsToolStripMenuItem->Click += gcnew System::EventHandler(this, &CompressionForm::instructionsToolStripMenuItem_Click);
 			// 
 			// aboutTheProjectToolStripMenuItem
 			// 
 			this->aboutTheProjectToolStripMenuItem->Name = L"aboutTheProjectToolStripMenuItem";
 			this->aboutTheProjectToolStripMenuItem->Size = System::Drawing::Size(209, 26);
 			this->aboutTheProjectToolStripMenuItem->Text = L"About the project";
+			this->aboutTheProjectToolStripMenuItem->Click += gcnew System::EventHandler(this, &CompressionForm::aboutTheProjectToolStripMenuItem_Click);
 			// 
 			// compressGroupBox
 			// 
@@ -494,7 +497,6 @@ namespace LZW_interface
 			this->statusStrip->PerformLayout();
 			this->ResumeLayout(false);
 			this->PerformLayout();
-
 		}
 #pragma endregion
 	public: array<uint16_t>^ convertPrimitiveUint16ToSystemArray(uint16_t* primitiveList, uint32_t size) {
@@ -502,7 +504,7 @@ namespace LZW_interface
 
 		array<uint16_t>^ arrayList = gcnew array<uint16_t>(size);
 
-		for (uint32_t i = 0; i < size; i++)
+		for (int i = 0; i < size; i++)
 		{
 			arrayList[i] = *list;
 			list++;
@@ -514,7 +516,7 @@ namespace LZW_interface
 
 		array<char>^ arrayList = gcnew array<char>(size);
 
-		for (uint32_t i = 0; i < size; i++)
+		for (int i = 0; i < size; i++)
 		{
 			arrayList[i] = *list;
 			list++;
@@ -555,7 +557,7 @@ namespace LZW_interface
 		return charArray;
 	}
 	public: uint16_t* convertByteArrayToPrimitiveUint16Array(array<Byte>^ arrayList) {
-		uint16_t* byteArray = new uint16_t[(arrayList->Length + 1) / 2];
+		uint16_t* byteArray = new uint16_t[(arrayList->Length + 2) / 2];
 
 		for (int i = 0; i < arrayList->Length - 1; i++)
 		{
@@ -579,7 +581,47 @@ namespace LZW_interface
 		compressedSizeTextBox->Text = "";
 		decompressedSizeTextBox->Text = "";
 	}
+	public: static void compress(System::Object^ obj)
+	{
+		CompressionForm^ form = (CompressionForm^)obj;
+		form->toolStripStatusLabel->Text = "Status: Compressing...";
+		//Compress opened file
+		char* primitive = form->convertStringToPrimitiveArray(form->inputOriginalText);
+		uint16_t* encodedArray;
+		uint32_t encodedSize;
 
+		encodedSize = lzw_compression::encodeLZW(primitive, form->inputOriginalText->Length, encodedArray);
+
+		form->encoded = form->convertPrimitiveUint16ToSystemArray(encodedArray, encodedSize);
+
+		int size = form->encoded->Length * sizeof(encoded[0]); //16-bit integers
+
+		form->compressionSizeTextBox->Text = size.ToString();
+		form->toolStripStatusLabel->Text = "Status: Compressed";
+		
+		delete[] primitive;
+		delete[] form->inputOriginalText;
+		delete[] encodedArray;
+	}
+	public: static void decompress(System::Object^ obj)
+	{
+		CompressionForm^ form = (CompressionForm^)obj;
+		form->toolStripStatusLabel->Text = "Status: Decompressing...";
+		//Decompress opened file
+		uint16_t* primitive = form->convertByteArrayToPrimitiveUint16Array(form->inputCompressedText);
+		char* decodedArray;
+		uint32_t decodedSize;
+		decodedSize = lzw_compression::decodeLZW(primitive, (form->inputCompressedText->Length + 2) / 2, decodedArray);
+		form->decoded = form->convertPrimitiveCharToSystemArray(decodedArray, decodedSize);
+
+		int size = form->decoded->Length * sizeof(decoded[0]); //8-bit char
+
+		form->decompressedSizeTextBox->Text = size.ToString();
+		form->toolStripStatusLabel->Text = "Status: Decompressed";
+		//delete[] primitive;
+		delete[] form->inputCompressedText;
+		delete[] decodedArray;
+	}
 	private: System::Void compressInputButton_Click(System::Object^ sender, System::EventArgs^ e) {
 		openCompressionFileDialog->FileName = "Select file...";
 		openCompressionFileDialog->Title = "Open file for compression";
@@ -604,11 +646,10 @@ namespace LZW_interface
 			toolStripStatusLabel->Text = "Status: File for compression not selected";
 			return;
 		}
-		toolStripStatusLabel->Text = "Status: Compressing...";
 		try 
 		{
 			//Compress opened file
-			char* primitive = convertStringToPrimitiveArray(inputOriginalText);
+			/*char* primitive = convertStringToPrimitiveArray(inputOriginalText);
 			uint16_t* encodedArray;
 			uint32_t encodedSize;
 
@@ -628,11 +669,20 @@ namespace LZW_interface
 			toolStripStatusLabel->Text = "Status: Compressed";
 			delete[] primitive;
 			delete[] inputOriginalText;
-			delete[] encodedArray;
+			delete[] encodedArray;*/
+			//ThreadStart^ mThread = gcnew ThreadStart(this, &CompressionForm::compress);
+			//Thread^ thread = gcnew Thread(gcnew Paramet CompressionForm::compress);
+			//thread->Start();
+			MyDelegate^ cDelegate = gcnew MyDelegate(&CompressionForm::compress);
+			cDelegate(this);
 		}
-		catch (...)
+		catch (String^ s)
 		{
-
+			MessageBox::Show("Compression error!", "Exception", MessageBoxButtons::OK, MessageBoxIcon::Error);
+		}
+		catch (Exception ^ e)
+		{
+			MessageBox::Show(e->Message, "Exception", MessageBoxButtons::OK, MessageBoxIcon::Error);
 		}
 		
 	}
@@ -661,9 +711,9 @@ namespace LZW_interface
 			toolStripStatusLabel->Text = "Status: Saved";
 			clearCompressionArea();
 		}
-		catch (...)
+		catch (Exception ^ e)
 		{
-
+			MessageBox::Show("File could not be saved!\n"+e->Message, "Exception", MessageBoxButtons::OK, MessageBoxIcon::Error);
 		}
 	}
 	private: System::Void decompressInputButton_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -673,13 +723,21 @@ namespace LZW_interface
 		openDecompressionFileDialog->ShowDialog();
 	}
 	private: System::Void openDecompressionFileDialog_FileOk(System::Object^ sender, System::ComponentModel::CancelEventArgs^ e) {
-		decompressInputTextBox->Text = openDecompressionFileDialog->FileName;
+		if (openDecompressionFileDialog->FileName->Substring(openDecompressionFileDialog->FileName->Length - 4) == ".etf")
+		{
+			decompressInputTextBox->Text = openDecompressionFileDialog->FileName;
 
-		//Read file information
-		inputCompressedText = File::ReadAllBytes(openDecompressionFileDialog->FileName);
+			//Read file information
+			inputCompressedText = File::ReadAllBytes(openDecompressionFileDialog->FileName);
 
-		int size = inputCompressedText->Length + sizeof(inputCompressedText[0]);
-		compressedSizeTextBox->Text = size.ToString();
+			int size = inputCompressedText->Length + sizeof(inputCompressedText[0]);
+			compressedSizeTextBox->Text = size.ToString();
+		}
+		else
+		{
+			MessageBox::Show("The selected file did not have the right extension. \".etf\"extension is needed.", "Extension error", MessageBoxButtons::OK, MessageBoxIcon::Warning);
+		}
+		
 	}
 	private: System::Void decompressButton_Click(System::Object^ sender, System::EventArgs^ e) {
 		if (inputCompressedText == nullptr)
@@ -687,28 +745,19 @@ namespace LZW_interface
 			toolStripStatusLabel->Text = "Status: File for decompression not selected";
 			return;
 		}
-		toolStripStatusLabel->Text = "Status: Decompressing...";
 
 		try
 		{
-			//Decompress opened file
-			uint16_t* primitive = convertByteArrayToPrimitiveUint16Array(inputCompressedText);
-			char* decodedArray;
-			uint32_t decodedSize;
-			decodedSize = lzw_compression::decodeLZW(primitive, (inputCompressedText->Length + 1) / 2, decodedArray);
-			decoded = convertPrimitiveCharToSystemArray(decodedArray, decodedSize);
-
-			int size = decoded->Length * sizeof(decoded[0]); //8-bit char
-
-			decompressedSizeTextBox->Text = size.ToString();
-			toolStripStatusLabel->Text = "Status: Decompressed";
-			//delete[] primitive;
-			delete[] inputCompressedText;
-			delete[] decodedArray;
+			MyDelegate^ dDelegate = gcnew MyDelegate(&CompressionForm::decompress);
+			dDelegate(this);
 		}
-		catch (...)
+		catch (String^ s)
 		{
-
+			MessageBox::Show("Decompression error!", "Exception", MessageBoxButtons::OK, MessageBoxIcon::Error);
+		}
+		catch (Exception ^ e)
+		{
+			MessageBox::Show(e->Message, "Exception", MessageBoxButtons::OK, MessageBoxIcon::Error);
 		}
 		
 	}
@@ -734,9 +783,9 @@ namespace LZW_interface
 			toolStripStatusLabel->Text = "Status: Saved";
 			clearDecompressionArea();
 		}
-		catch (...)
+		catch (Exception^ e)
 		{
-
+			MessageBox::Show("File could not be saved!\n"+e->Message, "Exception", MessageBoxButtons::OK, MessageBoxIcon::Error);
 		}
 		
 	}
@@ -747,5 +796,11 @@ namespace LZW_interface
 		secondForm = gcnew LZW_interface::CompressionViewForm();
 		secondForm->Show();
 	}
+private: System::Void aboutTheProjectToolStripMenuItem_Click(System::Object^ sender, System::EventArgs^ e) {
+	MessageBox::Show("This application is a part of bachelor thesis at University of Sarajevo and it serves as an example of dictionary-based algorithm implementation.", "About this project", MessageBoxButtons::OK);
+}
+private: System::Void instructionsToolStripMenuItem_Click(System::Object^ sender, System::EventArgs^ e) {
+	MessageBox::Show("The file for compression should be in simple, \".txt\" format because that format is the one that decompressor puts out.\n\n The file for decompression should be of the \".etf\" format that this application outputs.", "How to use the application", MessageBoxButtons::OK, MessageBoxIcon::Information);
+}
 };
 }

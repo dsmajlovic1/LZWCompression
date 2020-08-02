@@ -146,7 +146,7 @@
     <ClInclude Include="CompressionViewForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="ConvertCollections.h" />
+    <ClInclude Include="CompressThread.h" />
     <ClInclude Include="LZW_algorithm.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
@@ -164,10 +164,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="app.ico" />
-    <Image Include="logoEtf.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -183,7 +179,12 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="app.ico" />
+    <Image Include="logoEtf.ico" />
+  </ItemGroup>
+  <ItemGroup>
     <ResourceCompile Include="app.rc" />
+    <ResourceCompile Include="logoEtf.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

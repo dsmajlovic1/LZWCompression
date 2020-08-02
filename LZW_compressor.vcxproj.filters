@@ -30,7 +30,7 @@
     <ClInclude Include="CompressionViewForm.h">
       <Filter>Header files</Filter>
     </ClInclude>
-    <ClInclude Include="ConvertCollections.h">
+    <ClInclude Include="CompressThread.h">
       <Filter>Header files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -52,15 +52,18 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="logoEtf.ico">
+    <Image Include="app.ico">
       <Filter>Resource files</Filter>
     </Image>
-    <Image Include="app.ico">
+    <Image Include="logoEtf.ico">
       <Filter>Resource files</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc">
+      <Filter>Resource files</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="logoEtf.rc">
       <Filter>Resource files</Filter>
     </ResourceCompile>
   </ItemGroup>

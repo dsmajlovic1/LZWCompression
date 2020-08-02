@@ -15,8 +15,6 @@ namespace lzw_compression
 	//Dictionary node class
 	class Entry
 	{
-	private:
-
 	public:
 		uint16_t code;
 		char value;
@@ -24,6 +22,7 @@ namespace lzw_compression
 		Entry** children;
 		uint16_t childrenLength;
 		uint16_t childrenMax;
+
 		Entry(Entry* parent, uint16_t code, char value);
 		~Entry();
 		bool addChild(Entry* newEntry);
@@ -68,12 +67,12 @@ namespace lzw_compression
 		childrenLength = 0;
 		childrenMax = (1 << 8);
 		children = new Entry * [childrenMax];
-		for (uint16_t i = 0; i < childrenMax; i++) children[i] = nullptr;
+		for (int i = 0; i < childrenMax; i++) children[i] = nullptr;
 	}
 
 	Entry::~Entry()
 	{
-		for (uint16_t i = 0; i < childrenLength; i++)
+		for (int i = 0; i < childrenLength; i++)
 		{
 			delete children[i];
 		}
@@ -95,7 +94,7 @@ namespace lzw_compression
 				if (this->childrenLength * 2 < MAX_CHILDREN_NUMBER) childrenMax = childrenLength * 2;
 				else childrenMax = MAX_CHILDREN_NUMBER;
 
-				for (uint16_t i = 0; i < childrenLength; i++)
+				for (int i = 0; i < childrenLength; i++)
 				{
 					newArray[i] = children[i];
 				}
@@ -121,7 +120,7 @@ namespace lzw_compression
 		entriesNumber = MAX_CHILDREN_NUMBER;
 
 		//Entry** entryList = new Entry * [256];
-		for (uint16_t i = 0; i < MAX_CHILDREN_NUMBER; i++)
+		for (int i = 0; i < MAX_CHILDREN_NUMBER; i++)
 		{
 			int size = 0;
 			Entry* newEntry = new Entry(nullptr, i, (char(i)));
@@ -133,7 +132,7 @@ namespace lzw_compression
 	}
 	Dictionary::~Dictionary()
 	{
-		for (uint16_t i = 0; i < MAX_CHILDREN_NUMBER; i++)
+		for (int i = 0; i < MAX_CHILDREN_NUMBER; i++)
 		{
 			delete initialEntries[i];
 		}
@@ -146,7 +145,7 @@ namespace lzw_compression
 	bool Dictionary::addChild(Entry* parent, char value)
 	{
 		if (this->entriesNumber >= MAX_ENTRY_NUMBER) return false;
-		if (parent->childrenLength >= MAX_CHILDREN_NUMBER) throw gcnew System::IndexOutOfRangeException;
+		if (parent->childrenLength >= MAX_CHILDREN_NUMBER) throw "Dictionary capacity reached";
 
 		//parent->children[parent->childrenLength] = new Entry(parent, parent->childrenLength, value);
 		//parent->childrenLength++;
@@ -215,7 +214,7 @@ namespace lzw_compression
 		if (index < MAX_CHILDREN_NUMBER) return this->addChild(initialEntries[index], value);
 
 		Entry* parentPtr = nullptr;
-		for (uint16_t i = 0; i < MAX_CHILDREN_NUMBER; i++)
+		for (int i = 0; i < MAX_CHILDREN_NUMBER; i++)
 		{
 			parentPtr = findSubentry(initialEntries[i], index);
 			if (parentPtr != nullptr) break;
@@ -227,7 +226,7 @@ namespace lzw_compression
 	Entry* Dictionary::findSubentry(Entry* entry, uint16_t index)
 	{
 		Entry* ptr = nullptr;
-		for (uint16_t i = 0; i < entry->childrenLength; i++)
+		for (int i = 0; i < entry->childrenLength; i++)
 		{
 			if (entry->children[i]->code == index) return entry->children[i];
 			else
@@ -243,7 +242,7 @@ namespace lzw_compression
 		if (index < MAX_CHILDREN_NUMBER) return initialEntries[index];
 
 		Entry* ptr = nullptr;
-		for (uint16_t i = 0; i < MAX_CHILDREN_NUMBER; i++)
+		for (int i = 0; i < MAX_CHILDREN_NUMBER; i++)
 		{
 			ptr = findSubentry(initialEntries[i], index);
 			if (ptr != nullptr) return ptr;
@@ -257,7 +256,7 @@ namespace lzw_compression
 		if (length == 1 && string[0] >= 0 && string[0] < 256) return true;
 
 		bool contains = false;
-		for (uint16_t i = 0; i < MAX_CHILDREN_NUMBER; i++)
+		for (int i = 0; i < MAX_CHILDREN_NUMBER; i++)
 		{
 			if (initialEntries[i]->value == string[0])
 			{
@@ -276,7 +275,7 @@ namespace lzw_compression
 		{
 			bool contains = false;
 			if (length == 1) return true;
-			for (uint16_t i = 0; i < start->childrenLength; i++)
+			for (int i = 0; i < start->childrenLength; i++)
 			{
 				if (substring(start->children[i], (string + 1), length - 1)) contains = true;
 			}
@@ -287,17 +286,15 @@ namespace lzw_compression
 
 	uint16_t Dictionary::findIndex(char* string, uint16_t length)
 	{
-		//throw exception, define exception
 		if (length == 0) return 0;
 		if (string[0] > 256 || string[0] < 0) return 0;
 		bool continueLoop = true;
 		int stringValue = (uint16_t)string[0];
 		Entry* node = this->initialEntries[string[0]];
 
-		//line not needed
 		if (length == 1) return node->code;
 
-		for (uint16_t i = 0; i < length; i++)
+		for (int i = 0; i < length; i++)
 		{
 			if (i == length - 1) return node->code;
 
@@ -309,28 +306,26 @@ namespace lzw_compression
 				}
 			}
 		}
-		//remove?
+
 		return node->code;
 	}
 #pragma endregion Dictionary_implementation
 
 #pragma region LZW_implementation
 
-	uint32_t encodeLZW(char* originalData, uint32_t size, uint16_t* &encodedContainer)
+	uint32_t encodeLZW(char* originalData, int size, uint16_t* &encodedContainer)
 	{
 		try
 		{
 			Dictionary* encodingDictionary = new Dictionary();
 
 			uint16_t* encodedStream = new uint16_t[size];
-			uint32_t streamMax = size;
-			//encodedStream[0] = 0;
-			uint32_t streamLength = 0;
-			uint32_t current = 0;
+			int streamMax = size;
+			int streamLength = 0;
+			int current = 0;
 
 			char* dataStream = originalData;
-			//char* currentCharacter = dataStream;
-			uint16_t substringLength = 1;
+			int substringLength = 1;
 
 			while (current < size)
 			{
@@ -347,7 +342,7 @@ namespace lzw_compression
 					if (streamLength >= streamMax) {
 						streamMax = (streamMax << 1);
 						uint16_t* newStream = new uint16_t[streamMax];
-						for (uint16_t i = 0; i < streamLength; i++) newStream[i] = encodedStream[i];
+						for (int i = 0; i < streamLength; i++) newStream[i] = encodedStream[i];
 
 						delete[] encodedStream;
 						encodedStream = newStream;
@@ -356,25 +351,21 @@ namespace lzw_compression
 					encodedStream[streamLength] = encodingDictionary->findIndex(dataStream, substringLength);
 					streamLength++;
 				}
-				//if the string is not in the dictionary, encoded the last entry in dictionary, add new entry to the dictionary
+				//if the string is not in the dictionary, encode the last found entry in dictionary, add new entry to the dictionary
 				else
 				{
 					//if all alocated memory is used, allocate more memory
 					if (streamLength >= streamMax) {
 						streamMax = (streamMax << 1);
 						uint16_t* newStream = new uint16_t[streamMax];
-						for (uint16_t i = 0; i < streamLength; i++) newStream[i] = encodedStream[i];
+						for (int i = 0; i < streamLength; i++) newStream[i] = encodedStream[i];
 
 						delete[] encodedStream;
 						encodedStream = newStream;
 					}
 
-					if (*dataStream == 'n') {
-						dataStream = dataStream;
-					}
 					encodedStream[streamLength] = encodingDictionary->findIndex(dataStream, substringLength - 1);
 					encodingDictionary->addChild(encodedStream[streamLength], dataStream[substringLength - 1]);
-					
 					
 					streamLength++;
 
@@ -394,96 +385,100 @@ namespace lzw_compression
 		}
 		catch (...)
 		{
-			//throw custom exception
-			//std::cout << "encodeLZw exception" << std::endl;
-			return NULL;
+			throw "Encoding error";
 		}
 	}
 
 	uint32_t decodeLZW(uint16_t* encodedData, uint32_t size, char* &decodedContainer)
 	{
-		Dictionary* decodingDictionary = new Dictionary();
-
-		uint32_t streamLength = size;
-		uint32_t decodedLength = 0;
-		char* decodedStream = new char[streamLength+1];
-		uint32_t streamMax = streamLength;
-
-		for (uint32_t i = 0; i < streamLength; i++)
+		try
 		{
-			if (encodedData[i] == 858)
-			{
-				encodedData[i] = encodedData[i];
-			}
-			if (encodedData[i] == 1106)
-			{
-				encodedData[i] = encodedData[i];
-			}
-			Entry* entry;
-			if (encodedData[i] == decodingDictionary->Length())
-			{
-				entry = decodingDictionary->findEntry(encodedData[i - 1]);
-			}
-			else {
-				entry = decodingDictionary->findEntry(encodedData[i]);
-			}
-			std::stack<char> string;
+			Dictionary* decodingDictionary = new Dictionary();
 
-			while (entry != nullptr)
-			{
-				string.push(entry->value);
-				entry = entry->parent;
-			}
+			//uint32_t streamLength = size;
+			uint32_t decodedLength = 0;
+			char* decodedStream = new char[size];
+			uint32_t streamMax = size;
 
-			if (decodedLength + string.size() >= streamMax)
+			for (int i = 0; i < size; i++)
 			{
-				streamMax = (streamMax << 1);
-				char* newArray = new char[streamMax];
-
-				for (uint16_t i = 0; i < decodedLength; i++)
+				if (i >= 200000)
 				{
-					newArray[i] = decodedStream[i];
+					i = i;
 				}
-				delete[] decodedStream;
-				decodedStream = newArray;
-			}
 
-			if (i != 0 && !string.empty() && encodedData[i] != decodingDictionary->Length()) decodingDictionary->addChild(encodedData[i - 1], string.top());
-			else if (i != 0 && !string.empty() && encodedData[i] == decodingDictionary->Length())
-			{
-				decodingDictionary->addChild(encodedData[i - 1], string.top());
-
-				entry = decodingDictionary->findEntry(encodedData[i]);
-				while (!string.empty())
+				Entry* entry;
+				Entry* entryPtr;
+				if (encodedData[i] == decodingDictionary->Length())
 				{
-					string.pop();
+					entry = decodingDictionary->findEntry(encodedData[i - 1]);
 				}
+				else {
+					entry = decodingDictionary->findEntry(encodedData[i]);
+				}
+				std::stack<char> string;
+				entryPtr = entry;
+
 				while (entry != nullptr)
 				{
 					string.push(entry->value);
 					entry = entry->parent;
 				}
 
-			}
+				if (decodedLength + string.size() >= streamMax)
+				{
+					streamMax = (streamMax << 2);
+					char* newArray = new char[streamMax];
 
-			while (!string.empty())
-			{
-				decodedStream[decodedLength] = string.top();
+					for (int i = 0; i < decodedLength; i++)
+					{
+						newArray[i] = decodedStream[i];
+					}
+					delete[] decodedStream;
+					decodedStream = newArray;
+				}
 
-				string.pop();
-				decodedLength++;
+				if (i != 0 && !string.empty() && encodedData[i] != decodingDictionary->Length()) decodingDictionary->addChild(encodedData[i - 1], string.top());
+				else if (i != 0 && !string.empty() && encodedData[i] == decodingDictionary->Length())
+				{
+					decodingDictionary->addChild(entryPtr, string.top());
+
+					entry = decodingDictionary->findSubentry(entryPtr, encodedData[i]);
+					while (!string.empty())
+					{
+						string.pop();
+					}
+					while (entry != nullptr)
+					{
+						string.push(entry->value);
+						entry = entry->parent;
+					}
+
+				}
+
+				while (!string.empty())
+				{
+					decodedStream[decodedLength] = string.top();
+
+					string.pop();
+					decodedLength++;
+				}
 			}
+			delete decodingDictionary;
+
+			char* shortenedArray = new char[decodedLength];
+			for (int i = 0; i < decodedLength; i++)
+				shortenedArray[i] = decodedStream[i];
+
+			delete[] decodedStream;
+
+			decodedContainer = shortenedArray;
+			return decodedLength;
 		}
-		delete decodingDictionary;
-
-		char* shortenedArray = new char[decodedLength];
-		for (uint32_t i = 0; i < decodedLength; i++)
-			shortenedArray[i] = decodedStream[i];
-
-		delete[] decodedStream;
-
-		decodedContainer = shortenedArray;
-		return decodedLength;
+		catch (...)
+		{
+			throw "Decoding error";
+		}
 	}
 
 #pragma endregion LZW_implementation

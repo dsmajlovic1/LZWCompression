@@ -19,6 +19,7 @@ namespace LZW_interface {
 		CompressionViewForm()
 		{
 			InitializeComponent();
+			this->Icon = gcnew System::Drawing::Icon(L"logoEtf.ico");
 		}
 
 	protected:
@@ -40,6 +41,13 @@ namespace LZW_interface {
 	private: System::Windows::Forms::TextBox^ openFileTextBox;
 	private: System::Windows::Forms::Button^ openFileButton;
 	private: System::Windows::Forms::OpenFileDialog^ openFileDialog;
+	private: System::Windows::Forms::TextBox^ firstSizeTextBox;
+	private: System::Windows::Forms::Label^ firstLabel;
+	private: System::Windows::Forms::Label^ secondLabel;
+
+
+	private: System::Windows::Forms::TextBox^ secondSizeTextBox;
+
 
 
 	private:
@@ -57,6 +65,10 @@ namespace LZW_interface {
 			this->openFileTextBox = (gcnew System::Windows::Forms::TextBox());
 			this->openFileButton = (gcnew System::Windows::Forms::Button());
 			this->openFileDialog = (gcnew System::Windows::Forms::OpenFileDialog());
+			this->firstSizeTextBox = (gcnew System::Windows::Forms::TextBox());
+			this->firstLabel = (gcnew System::Windows::Forms::Label());
+			this->secondLabel = (gcnew System::Windows::Forms::Label());
+			this->secondSizeTextBox = (gcnew System::Windows::Forms::TextBox());
 			this->SuspendLayout();
 			// 
 			// compressRadioButton
@@ -89,6 +101,7 @@ namespace LZW_interface {
 			this->firstTextBox->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
 			this->firstTextBox->Size = System::Drawing::Size(453, 509);
 			this->firstTextBox->TabIndex = 2;
+			this->firstTextBox->TextChanged += gcnew System::EventHandler(this, &CompressionViewForm::firstTextBox_TextChanged);
 			// 
 			// convertButton
 			// 
@@ -108,6 +121,7 @@ namespace LZW_interface {
 			this->secondTextBox->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
 			this->secondTextBox->Size = System::Drawing::Size(453, 509);
 			this->secondTextBox->TabIndex = 5;
+			this->secondTextBox->TextChanged += gcnew System::EventHandler(this, &CompressionViewForm::secondTextBox_TextChanged);
 			// 
 			// openFileTextBox
 			// 
@@ -131,11 +145,49 @@ namespace LZW_interface {
 			this->openFileDialog->FileName = L"Select a file...";
 			this->openFileDialog->FileOk += gcnew System::ComponentModel::CancelEventHandler(this, &CompressionViewForm::openFileDialog_FileOk);
 			// 
+			// firstSizeTextBox
+			// 
+			this->firstSizeTextBox->Enabled = false;
+			this->firstSizeTextBox->Location = System::Drawing::Point(304, 586);
+			this->firstSizeTextBox->Name = L"firstSizeTextBox";
+			this->firstSizeTextBox->Size = System::Drawing::Size(100, 22);
+			this->firstSizeTextBox->TabIndex = 8;
+			// 
+			// firstLabel
+			// 
+			this->firstLabel->AutoSize = true;
+			this->firstLabel->Location = System::Drawing::Point(406, 589);
+			this->firstLabel->Name = L"firstLabel";
+			this->firstLabel->Size = System::Drawing::Size(42, 17);
+			this->firstLabel->TabIndex = 9;
+			this->firstLabel->Text = L"bytes";
+			// 
+			// secondLabel
+			// 
+			this->secondLabel->AutoSize = true;
+			this->secondLabel->Location = System::Drawing::Point(951, 591);
+			this->secondLabel->Name = L"secondLabel";
+			this->secondLabel->Size = System::Drawing::Size(59, 17);
+			this->secondLabel->TabIndex = 11;
+			this->secondLabel->Text = L"*2 bytes";
+			// 
+			// secondSizeTextBox
+			// 
+			this->secondSizeTextBox->Enabled = false;
+			this->secondSizeTextBox->Location = System::Drawing::Point(848, 586);
+			this->secondSizeTextBox->Name = L"secondSizeTextBox";
+			this->secondSizeTextBox->Size = System::Drawing::Size(100, 22);
+			this->secondSizeTextBox->TabIndex = 10;
+			// 
 			// CompressionViewForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(1022, 592);
+			this->ClientSize = System::Drawing::Size(1022, 615);
+			this->Controls->Add(this->secondLabel);
+			this->Controls->Add(this->secondSizeTextBox);
+			this->Controls->Add(this->firstLabel);
+			this->Controls->Add(this->firstSizeTextBox);
 			this->Controls->Add(this->openFileButton);
 			this->Controls->Add(this->openFileTextBox);
 			this->Controls->Add(this->secondTextBox);
@@ -144,7 +196,7 @@ namespace LZW_interface {
 			this->Controls->Add(this->decompressRadioButton);
 			this->Controls->Add(this->compressRadioButton);
 			this->Name = L"CompressionViewForm";
-			this->Text = L"Form1";
+			this->Text = L"Converter";
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -242,5 +294,31 @@ namespace LZW_interface {
 		}
 	}
 
+	private: System::Void firstTextBox_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+		if (compressRadioButton->Checked)
+		{
+			firstSizeTextBox->Text = firstTextBox->Text->Length.ToString();
+			firstLabel->Text = "bytes.";
+		}
+		else
+		{
+			firstSizeTextBox->Text = firstTextBox->Text->Split(' ')->Length.ToString();
+			firstLabel->Text = "*2 bytes.";
+		}
+		
+	}
+	private: System::Void secondTextBox_TextChanged(System::Object^ sender, System::EventArgs^ e) {
+		if (compressRadioButton->Checked)
+		{
+			secondSizeTextBox->Text = secondTextBox->Text->Split(' ')->Length.ToString();
+			secondLabel->Text = "*2 bytes.";
+		}
+		else
+		{
+			secondSizeTextBox->Text = secondTextBox->Text->Length.ToString();
+			secondLabel->Text = "bytes.";
+		}
+		
+	}
 };
 }

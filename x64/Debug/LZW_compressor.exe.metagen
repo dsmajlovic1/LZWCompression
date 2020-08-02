@@ -29,3 +29,5 @@ Class LZW_interface.CompressionForm: AutoLayout, AnsiClass, Class, Public, Befor
     convertUint16toUint8(UInt16[]): PrivateScope, Public, HideBySig
     convertStringToPrimitiveArray(String): PrivateScope, Public, HideBySig
     convertByteArrayToPrimitiveUint16Array(Byte[]): PrivateScope, Public, HideBySig
+    compress(Object): PrivateScope, Public, Static, HideBySig
+    decompress(Object): PrivateScope, Public, Static, HideBySig
