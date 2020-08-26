@@ -34,6 +34,7 @@ namespace lzw_compression
 	private:
 		Entry** initialEntries;
 		uint16_t entriesNumber;
+		uint16_t entriesMax;
 	public:
 		Dictionary();
 		~Dictionary();
@@ -83,16 +84,17 @@ namespace lzw_compression
 	{
 		if (childrenLength >= MAX_CHILDREN_NUMBER) return false;
 		try
-		{
-			//if all alocated memory is used, allocate more memory
-			Entry** newArray = new Entry * [this->childrenMax];
+		{			
 			children[childrenLength] = newEntry;
 
+			//if all alocated memory is used, allocate more memory
 			if (this->childrenLength >= this->childrenMax)
 			{
 				if (childrenMax >= MAX_CHILDREN_NUMBER) return false;
 				if (this->childrenLength * 2 < MAX_CHILDREN_NUMBER) childrenMax = childrenLength * 2;
 				else childrenMax = MAX_CHILDREN_NUMBER;
+
+				Entry** newArray = new Entry * [this->childrenMax];
 
 				for (int i = 0; i < childrenLength; i++)
 				{
@@ -116,16 +118,14 @@ namespace lzw_compression
 #pragma region Dictionary_implementation
 	Dictionary::Dictionary()
 	{
-		initialEntries = new Entry * [MAX_CHILDREN_NUMBER];
+		initialEntries = new Entry * [MAX_CHILDREN_NUMBER*2];
+		entriesMax = MAX_CHILDREN_NUMBER * 2;
 		entriesNumber = MAX_CHILDREN_NUMBER;
 
-		//Entry** entryList = new Entry * [256];
 		for (int i = 0; i < MAX_CHILDREN_NUMBER; i++)
 		{
-			int size = 0;
 			Entry* newEntry = new Entry(nullptr, i, (char(i)));
 			initialEntries[i] = newEntry;
-			size = sizeof(initialEntries[i]);
 		}
 
 		//initialEntries = entryList;
@@ -151,9 +151,30 @@ namespace lzw_compression
 		//parent->childrenLength++;
 		try
 		{
-			parent->addChild(new Entry(parent, this->entriesNumber, value));
-			this->entriesNumber++;
-			return true;
+			Entry* newEntry = new Entry(parent, this->entriesNumber, value);
+			if (parent->addChild(newEntry)) {
+				initialEntries[newEntry->code] = newEntry;
+				this->entriesNumber++;
+
+				if (entriesNumber >= entriesMax) {
+					if (entriesNumber * 2 < MAX_ENTRY_NUMBER) entriesMax = entriesNumber * 2;
+					else entriesMax = MAX_ENTRY_NUMBER;
+					Entry** newArray = new Entry * [entriesMax];
+
+					for (int i = 0; i < entriesNumber; i++)
+					{
+						newArray[i] = initialEntries[i];
+					}
+					delete[] initialEntries;
+					initialEntries = newArray;
+				}
+
+				return true;
+			}
+			else {
+				delete newEntry;
+				return false;
+			}
 		}
 		catch (...)
 		{
@@ -239,7 +260,7 @@ namespace lzw_compression
 	}
 	Entry* Dictionary::findEntry(uint16_t index)
 	{
-		if (index < MAX_CHILDREN_NUMBER) return initialEntries[index];
+		/*if (index < MAX_CHILDREN_NUMBER) return initialEntries[index];
 
 		Entry* ptr = nullptr;
 		for (int i = 0; i < MAX_CHILDREN_NUMBER; i++)
@@ -247,7 +268,9 @@ namespace lzw_compression
 			ptr = findSubentry(initialEntries[i], index);
 			if (ptr != nullptr) return ptr;
 		}
-		return ptr;
+		return ptr;*/
+		if (index < entriesNumber) return initialEntries[index];
+		else return nullptr;
 	}
 
 	bool Dictionary::containsString(char* string, uint16_t length)

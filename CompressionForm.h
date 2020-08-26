@@ -19,7 +19,11 @@ namespace LZW_interface
 	using namespace System::IO;
 	using namespace System::Threading;
 
-	delegate void MyDelegate(Object^ obj);
+	delegate void StatusDelegate();
+
+	delegate void EncodedDelegate(array<uint16_t>^ encodedArray);
+
+	delegate void DecodedDelegate(array<char>^ decodedArray);
 	
 	public ref class CompressionForm : public System::Windows::Forms::Form
 	{
@@ -499,7 +503,7 @@ namespace LZW_interface
 			this->PerformLayout();
 		}
 #pragma endregion
-	public: array<uint16_t>^ convertPrimitiveUint16ToSystemArray(uint16_t* primitiveList, uint32_t size) {
+	public: static array<uint16_t>^ convertPrimitiveUint16ToSystemArray(uint16_t* primitiveList, uint32_t size) {
 		uint16_t* list = primitiveList;
 
 		array<uint16_t>^ arrayList = gcnew array<uint16_t>(size);
@@ -511,7 +515,7 @@ namespace LZW_interface
 		}
 		return arrayList;
 	}
-	public: array<char>^ convertPrimitiveCharToSystemArray(char* primitiveList, uint32_t size) {
+	public: static array<char>^ convertPrimitiveCharToSystemArray(char* primitiveList, uint32_t size) {
 		char* list = primitiveList;
 
 		array<char>^ arrayList = gcnew array<char>(size);
@@ -524,7 +528,7 @@ namespace LZW_interface
 
 		return arrayList;
 	}
-	public: array<uint8_t>^ convertUint16toUint8(array<uint16_t>^ array16)
+	public: static array<uint8_t>^ convertUint16toUint8(array<uint16_t>^ array16)
 	{
 		array<uint8_t>^ array8 = gcnew array<uint8_t>(array16->Length * 2);
 
@@ -536,7 +540,7 @@ namespace LZW_interface
 		return array8;
 	}
 
-	private: array<uint8_t>^ convertChartoUint8(array<char>^ arrayChar)
+	private: static array<uint8_t>^ convertChartoUint8(array<char>^ arrayChar)
 	{
 		array<uint8_t>^ array8 = gcnew array<uint8_t>(arrayChar->Length);
 
@@ -547,7 +551,7 @@ namespace LZW_interface
 		return array8;
 	}
 
-	public: char* convertStringToPrimitiveArray(String^ string) {
+	public: static char* convertStringToPrimitiveArray(String^ string) {
 		char* charArray = new char[string->Length + 1];
 		for (int i = 0; i < string->Length; i++)
 		{
@@ -556,7 +560,7 @@ namespace LZW_interface
 		charArray[string->Length] = EOF;
 		return charArray;
 	}
-	public: uint16_t* convertByteArrayToPrimitiveUint16Array(array<Byte>^ arrayList) {
+	public: static uint16_t* convertByteArrayToPrimitiveUint16Array(array<Byte>^ arrayList) {
 		uint16_t* byteArray = new uint16_t[(arrayList->Length + 2) / 2];
 
 		for (int i = 0; i < arrayList->Length - 1; i++)
@@ -581,45 +585,69 @@ namespace LZW_interface
 		compressedSizeTextBox->Text = "";
 		decompressedSizeTextBox->Text = "";
 	}
-	public: static void compress(System::Object^ obj)
+	private: System::Void setCompressingStatus() {
+		toolStripStatusLabel->Text = "Status: Compressing...";
+	}
+	private: System::Void setEncoded(array<uint16_t>^ encodedArray) {
+		encoded = encodedArray;
+		
+		int size = encoded->Length * sizeof(encoded[0]); //16-bit integers
+		compressionSizeTextBox->Text = size.ToString();
+
+		toolStripStatusLabel->Text = "Status: Compressed";
+	}
+
+	private: System::Void setDecompressingStatus() {
+		toolStripStatusLabel->Text = "Status: Decompressing...";
+	}
+	private: System::Void setDecoded(array<char>^ decodedArray) {
+		decoded = decodedArray;
+
+		int size = decoded->Length * sizeof(decoded[0]); //16-bit integers
+		decompressedSizeTextBox->Text = size.ToString();
+
+		toolStripStatusLabel->Text = "Status: Decompressed";
+	}
+	public: void compress(System::Object^ obj)
 	{
-		CompressionForm^ form = (CompressionForm^)obj;
-		form->toolStripStatusLabel->Text = "Status: Compressing...";
+		String ^ inputText = (String^)obj;
+
+		StatusDelegate^ statusDelegate = gcnew StatusDelegate(this, &CompressionForm::setCompressingStatus);
+		this->Invoke(statusDelegate);
+
 		//Compress opened file
-		char* primitive = form->convertStringToPrimitiveArray(form->inputOriginalText);
+		char* primitive = CompressionForm::convertStringToPrimitiveArray(inputText);
 		uint16_t* encodedArray;
 		uint32_t encodedSize;
 
-		encodedSize = lzw_compression::encodeLZW(primitive, form->inputOriginalText->Length, encodedArray);
+		encodedSize = lzw_compression::encodeLZW(primitive, inputText->Length, encodedArray);
 
-		form->encoded = form->convertPrimitiveUint16ToSystemArray(encodedArray, encodedSize);
-
-		int size = form->encoded->Length * sizeof(encoded[0]); //16-bit integers
-
-		form->compressionSizeTextBox->Text = size.ToString();
-		form->toolStripStatusLabel->Text = "Status: Compressed";
+		EncodedDelegate^ encodedDelegate = gcnew EncodedDelegate(this, &CompressionForm::setEncoded);
+		this->Invoke(encodedDelegate, CompressionForm::convertPrimitiveUint16ToSystemArray(encodedArray, encodedSize));
 		
 		delete[] primitive;
-		delete[] form->inputOriginalText;
+		delete[] inputText;
 		delete[] encodedArray;
 	}
-	public: static void decompress(System::Object^ obj)
+	public: void decompress(System::Object^ obj)
 	{
-		CompressionForm^ form = (CompressionForm^)obj;
-		form->toolStripStatusLabel->Text = "Status: Decompressing...";
+		array<Byte>^ inputText = (array<Byte>^) obj;
+
+		StatusDelegate^ statusDelegate = gcnew StatusDelegate(this, &CompressionForm::setDecompressingStatus);
+		this->Invoke(statusDelegate);
+
 		//Decompress opened file
-		uint16_t* primitive = form->convertByteArrayToPrimitiveUint16Array(form->inputCompressedText);
+		uint16_t* primitive = CompressionForm::convertByteArrayToPrimitiveUint16Array(inputText);
 		char* decodedArray;
 		uint32_t decodedSize;
-		decodedSize = lzw_compression::decodeLZW(primitive, (form->inputCompressedText->Length + 2) / 2, decodedArray);
-		form->decoded = form->convertPrimitiveCharToSystemArray(decodedArray, decodedSize);
 
-		int size = form->decoded->Length * sizeof(decoded[0]); //8-bit char
+		decodedSize = lzw_compression::decodeLZW(primitive, (inputText->Length + 2) / 2, decodedArray);
+		
+		DecodedDelegate^ decodedDelegate = gcnew DecodedDelegate(this, &CompressionForm::setDecoded);
+		this->Invoke(decodedDelegate, CompressionForm::convertPrimitiveCharToSystemArray(decodedArray, decodedSize));
 
-		form->decompressedSizeTextBox->Text = size.ToString();
-		form->toolStripStatusLabel->Text = "Status: Decompressed";
 		//delete[] primitive;
-		delete[] form->inputCompressedText;
+		delete[] inputText;
 		delete[] decodedArray;
 	}
 	private: System::Void compressInputButton_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -636,7 +664,6 @@ namespace LZW_interface
 		inputOriginalText = File::ReadAllText(openCompressionFileDialog->FileName);
 
 		int size = inputOriginalText->Length+sizeof(inputOriginalText[0]);
-		//int size = sizeof(inputOriginalText);
 		originalSizeTextBox->Text = size.ToString();
 	}
 	
@@ -648,33 +675,9 @@ namespace LZW_interface
 		}
 		try 
 		{
-			//Compress opened file
-			/*char* primitive = convertStringToPrimitiveArray(inputOriginalText);
-			uint16_t* encodedArray;
-			uint32_t encodedSize;
-
-			encodedSize = lzw_compression::encodeLZW(primitive, inputOriginalText->Length, encodedArray);
-
-			//lzw_compression::ThreadCall threadCall = new lzw_compression::ThreadCall();
-			//CompressCall^ compressCall = gcnew CompressCall(primitive, inputOriginalText->Length, encodedArray, encodedSize);
-			//Thread^ compressThread = gcnew Thread(gcnew ThreadStart(compressCall, &CompressCall::compress));
-			//compressThread->Start();
-
-			encoded = convertPrimitiveUint16ToSystemArray(encodedArray, encodedSize);
-
-			int size = encoded->Length * sizeof(encoded[0]); //16-bit integers
-			//int size = sizeof(encoded);
-
-			compressionSizeTextBox->Text = size.ToString();
-			toolStripStatusLabel->Text = "Status: Compressed";
-			delete[] primitive;
-			delete[] inputOriginalText;
-			delete[] encodedArray;*/
-			//ThreadStart^ mThread = gcnew ThreadStart(this, &CompressionForm::compress);
-			//Thread^ thread = gcnew Thread(gcnew Paramet CompressionForm::compress);
-			//thread->Start();
-			MyDelegate^ cDelegate = gcnew MyDelegate(&CompressionForm::compress);
-			cDelegate(this);
+			Thread^ compressThread = gcnew Thread(gcnew ParameterizedThreadStart(this, &CompressionForm::compress));
+			compressThread->IsBackground = true;
+			compressThread->Start(inputOriginalText);
 		}
 		catch (String^ s)
 		{
@@ -717,9 +720,9 @@ namespace LZW_interface
 		}
 	}
 	private: System::Void decompressInputButton_Click(System::Object^ sender, System::EventArgs^ e) {
-		openCompressionFileDialog->FileName = "Select file...";
+		openDecompressionFileDialog->FileName = "Select file...";
 		openDecompressionFileDialog->Title = "Open file for decompression";
-		openCompressionFileDialog->Multiselect = false;
+		openDecompressionFileDialog->Multiselect = false;
 		openDecompressionFileDialog->ShowDialog();
 	}
 	private: System::Void openDecompressionFileDialog_FileOk(System::Object^ sender, System::ComponentModel::CancelEventArgs^ e) {
@@ -748,8 +751,9 @@ namespace LZW_interface
 
 		try
 		{
-			MyDelegate^ dDelegate = gcnew MyDelegate(&CompressionForm::decompress);
-			dDelegate(this);
+			Thread^ decompressThread = gcnew Thread(gcnew ParameterizedThreadStart(this, &CompressionForm::decompress));
+			decompressThread->IsBackground = true;
+			decompressThread->Start(inputCompressedText);
 		}
 		catch (String^ s)
 		{

@@ -24,10 +24,10 @@ Class LZW_interface.CompressionForm: AutoLayout, AnsiClass, Class, Public, Befor
   :System.Windows.Forms.Form
     Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
   Methods:
-    convertPrimitiveUint16ToSystemArray(UInt16*, UInt32): PrivateScope, Public, HideBySig
-    convertPrimitiveCharToSystemArray(SByte*, UInt32): PrivateScope, Public, HideBySig
-    convertUint16toUint8(UInt16[]): PrivateScope, Public, HideBySig
-    convertStringToPrimitiveArray(String): PrivateScope, Public, HideBySig
-    convertByteArrayToPrimitiveUint16Array(Byte[]): PrivateScope, Public, HideBySig
-    compress(Object): PrivateScope, Public, Static, HideBySig
-    decompress(Object): PrivateScope, Public, Static, HideBySig
+    convertPrimitiveUint16ToSystemArray(UInt16*, UInt32): PrivateScope, Public, Static, HideBySig
+    convertPrimitiveCharToSystemArray(SByte*, UInt32): PrivateScope, Public, Static, HideBySig
+    convertUint16toUint8(UInt16[]): PrivateScope, Public, Static, HideBySig
+    convertStringToPrimitiveArray(String): PrivateScope, Public, Static, HideBySig
+    convertByteArrayToPrimitiveUint16Array(Byte[]): PrivateScope, Public, Static, HideBySig
+    compress(Object): PrivateScope, Public, HideBySig
+    decompress(Object): PrivateScope, Public, HideBySig
