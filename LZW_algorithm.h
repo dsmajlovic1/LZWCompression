@@ -40,8 +40,6 @@ namespace lzw_compression
 		~Dictionary();
 
 		uint16_t Length();
-		void logSubentries(Entry* parent, System::String^ indent);
-		void logDictionary();
 		bool substring(Entry* start, char* string, uint16_t length);
 		Entry* findSubentry(Entry* entry, uint16_t index);
 		bool addChild(Entry* parent, char value);
@@ -52,7 +50,7 @@ namespace lzw_compression
 	};
 
 	//LZW implemention
-	uint32_t encodeLZW(char* originalData, uint32_t size, uint16_t*& encodedContainer);
+	uint32_t encodeLZW(char* originalData, int size, uint16_t*& encodedContainer);
 	uint32_t decodeLZW(uint16_t* encodedData, uint32_t size, char*& decodedContainer);
 
 
@@ -109,7 +107,6 @@ namespace lzw_compression
 		}
 		catch (...)
 		{
-			//std::cout << "addChild exception" << std::endl;
 			return false;
 		}
 	}
@@ -128,7 +125,6 @@ namespace lzw_compression
 			initialEntries[i] = newEntry;
 		}
 
-		//initialEntries = entryList;
 	}
 	Dictionary::~Dictionary()
 	{
@@ -147,8 +143,6 @@ namespace lzw_compression
 		if (this->entriesNumber >= MAX_ENTRY_NUMBER) return false;
 		if (parent->childrenLength >= MAX_CHILDREN_NUMBER) throw "Dictionary capacity reached";
 
-		//parent->children[parent->childrenLength] = new Entry(parent, parent->childrenLength, value);
-		//parent->childrenLength++;
 		try
 		{
 			Entry* newEntry = new Entry(parent, this->entriesNumber, value);
@@ -178,55 +172,11 @@ namespace lzw_compression
 		}
 		catch (...)
 		{
-			//std::cout << "addChild exception" << std::endl;
 			return false;
 		}
 	}
 
-	void Dictionary::logSubentries(Entry* parent, System::String^ indent)
-	{
-		System::IO::StreamWriter^ stream = System::IO::File::AppendText("C:\\Users\\Delila\\Desktop\\logTree.txt");
-		array<char>^ writeArray = gcnew array<char>(6);
-		writeArray[0] = static_cast<char>((parent->code >> 8));
-		writeArray[1] = static_cast<char>(parent->code);
-		writeArray[2] = '-';
-		writeArray[3] = parent->value;
-		writeArray[4] = ':';
-		writeArray[5] = '\n';
-		//char* charOne = new char[1];
-		//charOne[0] = static_cast<char>(writeArray[3]);
-		char charOne = static_cast<char>(writeArray[3]);
-		//if(stream->Length == 0)stream->Write(writeArray, stream->Length, 6);
-		//else stream->Write(writeArray, stream->Length-1, 6);
-		System::String^ string = gcnew System::String(indent + parent->code.ToString() + "-" + gcnew System::String(&charOne)+ " sub "+ parent->childrenLength.ToString()+  ":\n");
-		stream->WriteLine(string);
-		//delete[] charOne;
 
-		stream->Close();
-		for (int i = 0; i < parent->childrenLength; i++)
-		{
-			logSubentries(parent->children[i], indent+"		");
-		}
-			
-
-		
-	}
-
-	void Dictionary::logDictionary()
-	{
-		if (System::IO::File::Exists("C:\\Users\\Delila\\Desktop\\logTree.txt"))
-		{
-			System::IO::File::Delete("C:\\Users\\Delila\\Desktop\\logTree.txt");
-		}
-		System::IO::File::Create("C:\\Users\\Delila\\Desktop\\logTree.txt")->Close();
-		for (int i = 0; i < MAX_CHILDREN_NUMBER; i++)
-		{
-			logSubentries(this->initialEntries[i], "");
-		}
-			
-
-
-	}
 
 	bool Dictionary::addChild(uint16_t index, char value)
 	{
@@ -260,15 +210,6 @@ namespace lzw_compression
 	}
 	Entry* Dictionary::findEntry(uint16_t index)
 	{
-		/*if (index < MAX_CHILDREN_NUMBER) return initialEntries[index];
-
-		Entry* ptr = nullptr;
-		for (int i = 0; i < MAX_CHILDREN_NUMBER; i++)
-		{
-			ptr = findSubentry(initialEntries[i], index);
-			if (ptr != nullptr) return ptr;
-		}
-		return ptr;*/
 		if (index < entriesNumber) return initialEntries[index];
 		else return nullptr;
 	}
@@ -398,8 +339,6 @@ namespace lzw_compression
 			}
 			
 
-			//encodingDictionary->logDictionary();
-
 			delete encodingDictionary;
 
 			encodedContainer = encodedStream;
@@ -418,7 +357,6 @@ namespace lzw_compression
 		{
 			Dictionary* decodingDictionary = new Dictionary();
 
-			//uint32_t streamLength = size;
 			uint32_t decodedLength = 0;
 			char* decodedStream = new char[size];
 			uint32_t streamMax = size;

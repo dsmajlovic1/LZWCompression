@@ -5,12 +5,13 @@ C:\Users\Delila\source\repos\LZW_compressor\LZWcompressor.cpp(1,1): warning C465
 C:\Users\Delila\source\repos\LZW_compressor\resource.h(6,1): warning C4005: 'MAINICON': macro redefinition
 C:\Users\Delila\source\repos\LZW_compressor\resource.h(5): message : see previous definition of 'MAINICON'
 C:\Users\Delila\source\repos\LZW_compressor\LZW_algorithm.h(13,80): warning C4302: '<function-style-cast>': truncation from 'unsigned short (__cdecl *)(void) noexcept' to 'uint16_t'
-C:\Users\Delila\source\repos\LZW_compressor\LZW_algorithm.h(426,22): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Delila\source\repos\LZW_compressor\LZW_algorithm.h(456,24): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Delila\source\repos\LZW_compressor\LZW_algorithm.h(493,22): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Delila\source\repos\LZW_compressor\CompressionForm.h(513,21): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Delila\source\repos\LZW_compressor\CompressionForm.h(525,21): warning C4018: '<': signed/unsigned mismatch
-C:\Users\Delila\source\repos\LZW_compressor\CompressionForm.h(713,18): warning C4101: 's': unreferenced local variable
-C:\Users\Delila\source\repos\LZW_compressor\CompressionForm.h(792,18): warning C4101: 's': unreferenced local variable
+C:\Users\Delila\source\repos\LZW_compressor\LZW_algorithm.h(364,22): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Delila\source\repos\LZW_compressor\LZW_algorithm.h(394,24): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Delila\source\repos\LZW_compressor\LZW_algorithm.h(431,22): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Delila\source\repos\LZW_compressor\CompressionForm.h(510,22): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Delila\source\repos\LZW_compressor\CompressionForm.h(522,22): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Delila\source\repos\LZW_compressor\CompressionForm.h(681,19): warning C4101: 's': unreferenced local variable
+C:\Users\Delila\source\repos\LZW_compressor\CompressionForm.h(757,19): warning C4101: 's': unreferenced local variable
+  .NETFramework,Version=v4.7.2.AssemblyAttributes.cpp
   AssemblyInfo.obj : MSIL module encountered; incremental linking is disabled for MSIL; performing full link
   LZW_compressor.vcxproj -> C:\Users\Delila\source\repos\LZW_compressor\x64\Debug\LZW_compressor.exe
